@@ -1,6 +1,7 @@
 package main
 
 import (
+	"PFS/client/handlers"
 	"fmt"
 	"net"
 	"os"
@@ -19,8 +20,6 @@ func tracker() {
 
 }
 
-
-
 func peerManager(handle net.Listener) {
 	fmt.Println("peer_manager starting ....")
 	for {
@@ -29,7 +28,7 @@ func peerManager(handle net.Listener) {
 			fmt.Println("peer_manager error new client " + err.Error())
 		}
 
-		go PeerHandle(con)
+		go handlers.SeedHandle(con)
 	}
 
 }
@@ -40,10 +39,12 @@ func main() {
 	if err != nil {
 		fmt.Println("Error Listening: " + err.Error())
 	}
-
-	go tracker()
-	go peerManager(handle)
-	for {
-
+	handlers.Server = server
+	if !handlers.CheckTracker() {
+		os.Exit(1)
 	}
+	go peerManager(handle)
+
+	handlers.Console()
+
 }
