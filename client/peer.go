@@ -10,13 +10,16 @@ const port = "localhost:"
 const server = "localhost:7777"
 
 func tracker() {
-	net.Dial("tcp", server)
+	con, err := net.Dial("tcp", server)
+	if err != nil {
+		fmt.Println("Connection to tracker failed, exiting program: " + err.Error())
+		os.Exit(1)
+	}
+	fmt.Println("Connection to tracker Successful: " + con.RemoteAddr().String())
+
 }
 
-func peerHandle(con net.Conn) {
-	fmt.Println("peer_handle new connection " + con.RemoteAddr().String())
 
-}
 
 func peerManager(handle net.Listener) {
 	fmt.Println("peer_manager starting ....")
@@ -26,12 +29,13 @@ func peerManager(handle net.Listener) {
 			fmt.Println("peer_manager error new client " + err.Error())
 		}
 
-		go peerHandle(con)
+		go PeerHandle(con)
 	}
 
 }
 func main() {
 	myPort := port + string(os.Args[1])
+	fmt.Println("Listening on my port: " + myPort)
 	handle, err := net.Listen("tcp", myPort)
 	if err != nil {
 		fmt.Println("Error Listening: " + err.Error())
@@ -39,4 +43,7 @@ func main() {
 
 	go tracker()
 	go peerManager(handle)
+	for {
+
+	}
 }
