@@ -12,11 +12,11 @@ const port = "localhost:7777"
 const db = "tracker.db"
 
 func handleClient(con net.Conn, db *bolt.DB) {
-	fmt.Println("recieved req client" + con.RemoteAddr().String())
+	fmt.Println("recieved req client: " + con.RemoteAddr().String())
 	cli := handles.Client{
 		Con: con,
 		Db:  db}
-	
+	cli.RequestHandle()
 }
 
 func main() {

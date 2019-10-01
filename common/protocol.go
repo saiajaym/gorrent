@@ -16,3 +16,24 @@ type FileReg struct {
 	IPAddr string
 	List   []FileShare
 }
+
+//FileLocation message type for location request
+type FileLocation struct {
+	File FileShare
+}
+
+//MsgReq enables coomunication between client and server with type of req
+//Register to registerfiles
+//FileList to list files
+type MsgReq struct {
+	MessageType string
+	Share       FileShare
+	Reg         FileReg
+	Loc         FileLocation
+}
+
+//MsgRep struct for msg reply for MsgReq
+type MsgRep struct {
+	Success bool
+	List    []FileShare
+}
