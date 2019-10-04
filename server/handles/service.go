@@ -17,6 +17,7 @@ func (cli *Client) RequestHandle() {
 	switch msg.MessageType {
 	case "Register":
 		req := msg.Reg
+		fmt.Println("Received req from client", req.IPAddr)
 		suc := cli.registerReq(req.IPAddr, req.List)
 		if suc {
 			cli.RegisterReply()

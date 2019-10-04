@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 //Server holds server IP and Port
@@ -45,14 +46,16 @@ func GetList() []common.FileShare {
 //FileRegister registers a given file name to server
 func FileRegister(file string, size string) {
 	con, err := net.Dial("tcp", Server)
+	var li []common.FileShare
+	li = append(li, common.FileShare{Name: file, Size: size})
 	if err != nil {
 		fmt.Println("Connection to tracker failed, exiting program: " + err.Error())
 
 	}
 	msg := &common.MsgReq{}
 	msg.MessageType = "Register"
-	msg.Share.Name = file
-	msg.Share.Size = size
+	msg.Reg.List = li
+	msg.Reg.IPAddr = strings.Split(con.LocalAddr().String(), ":")[0]
 	enc := gob.NewEncoder(con)
 	enc.Encode(msg)
 	rep := &common.MsgRep{}

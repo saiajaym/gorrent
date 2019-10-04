@@ -42,10 +42,13 @@ func DBOpen(file string) (*bolt.DB, error) {
 
 //AddList Adds list of files to tracker
 func (cli *Client) AddList(list []common.FileShare) error {
+	//fmt.Println("At addList:" + )
 	err := cli.Db.Update(func(tx *bolt.Tx) error {
 		err := error(nil)
 		bucket := tx.Bucket(fileList)
+
 		for _, l := range list {
+			fmt.Println("Adding to bd:.." + l.Name)
 			err = bucket.Put([]byte(l.Name), []byte(l.Size))
 		}
 		return err

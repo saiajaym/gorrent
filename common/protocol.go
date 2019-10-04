@@ -27,7 +27,6 @@ type FileLocation struct {
 //FileList to list files
 type MsgReq struct {
 	MessageType string
-	Share       FileShare
 	Reg         FileReg
 	Loc         FileLocation
 }
