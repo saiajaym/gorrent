@@ -25,8 +25,8 @@ func (cli *Client) RequestHandle() {
 	case "FileList":
 		cli.fileListReq()
 	case "FileLocation":
-		req := msg.Loc
-		cli.fileLocReq(req.File)
+		req := msg.Loc.Name
+		cli.fileLocReq(req)
 	default:
 		fmt.Println("RequestHandle invalid message tyoe")
 	}
@@ -67,8 +67,8 @@ func (cli *Client) fileListReq() ([]common.FileShare, error) {
 	return list, err
 }
 
-func (cli *Client) fileLocReq(file common.FileShare) bool {
-	if len(file.Name) == 0 {
+func (cli *Client) fileLocReq(file string) bool {
+	if len(file) == 0 {
 		fmt.Println("FileLocation empty Request")
 		return false
 	}

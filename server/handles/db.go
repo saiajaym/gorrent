@@ -2,8 +2,10 @@ package handles
 
 import (
 	"PFS/common"
+	"bytes"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -11,8 +13,9 @@ import (
 )
 
 var (
-	fileList = []byte("fileList")
-	fileLoc  = []byte("fielLocation")
+	fileList      = []byte("fileList")
+	fileLoc       = []byte("fielLocation")
+	chunkLocation = []byte("chunkLocation")
 )
 
 //DBOpen opens and return db handle
@@ -48,7 +51,7 @@ func (cli *Client) AddList(list []common.FileShare) error {
 		bucket := tx.Bucket(fileList)
 
 		for _, l := range list {
-			fmt.Println("Adding to bd:.." + l.Name)
+			fmt.Println("Adding to db... " + l.Name)
 			err = bucket.Put([]byte(l.Name), []byte(l.Size))
 		}
 		return err
@@ -62,16 +65,24 @@ func (cli *Client) AddList(list []common.FileShare) error {
 
 //AddIPAdd Adds list of files and corresponding IPaddr to db
 func (cli *Client) AddIPAdd(list []common.FileShare, ipaddr string) error {
+	fmt.Println("At AddIP")
+	for i := range list {
+		list[i].Name = list[i].Name + "&" + ipaddr
+	}
 	err := cli.Db.Update(func(tx *bolt.Tx) error {
 		err := error(nil)
 		bucket := tx.Bucket(fileLoc)
 		for _, l := range list {
-			ex := bucket.Get([]byte(l.Name))
-			if ex == nil {
-				err = bucket.Put([]byte(l.Name), []byte(ipaddr))
-			} else {
-				err = bucket.Put([]byte(l.Name), []byte(string(ex)+"#"+ipaddr))
+			//fmt.Printf("cal chunks for %s, %s \n", l.Name, l.Size)
+			tot, _ := strconv.Atoi(l.Size)
+			//fmt.Printf("cal chunks for %s, %d \n", l.Name, tot)
+			var chunks string
+			for i := 1; tot >= 0; i++ {
+				chunks = chunks + strconv.Itoa(i) + ","
+				tot = tot - common.ChunkSize
 			}
+			fmt.Println("Adding chunks for " + l.Name + chunks)
+			err = bucket.Put([]byte(l.Name), []byte(chunks))
 		}
 
 		return err
@@ -109,19 +120,17 @@ func (cli *Client) GetList() ([]common.FileShare, error) {
 
 //FileLoc returns IP address of files
 //returns nil if file not found
-func (cli *Client) FileLoc(file common.FileShare) ([]common.FileShare, error) {
-	var list = []common.FileShare{}
+func (cli *Client) FileLoc(file string) ([]common.FileLocation, error) {
+	var list = []common.FileLocation{}
 	err := cli.Db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket(fileLoc)
-		li := bucket.Get([]byte(file.Name))
-		if li == nil {
-			return errors.New("File Not Present")
-		}
-		sli := strings.Split(string(li), "#")
-		for _, filName := range sli {
-			list = append(list, common.FileShare{Name: filName, Size: ""})
+		c := tx.Bucket(fileLoc).Cursor()
+		prefix := []byte(file)
 
+		for k, v := c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
+			ip := strings.Split(string(k), "&")
+			list = append(list, common.FileLocation{IpAddr: ip[1], Chunks: string(v)})
 		}
+
 		return nil
 	})
 
