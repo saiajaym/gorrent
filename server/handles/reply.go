@@ -33,9 +33,9 @@ func (cli *Client) FileListReply(list []common.FileShare) {
 
 //FileLocationsReply Includes number of endpoints (uint16); then for each endpoint,
 //chunks of the file it has, an IP address (uint32) and port (uint16).
-func (cli *Client) FileLocationsReply(list []common.FileShare) {
+func (cli *Client) FileLocationsReply(list []common.FileLocation) {
 	enc := gob.NewEncoder(cli.Con)
-	msg := &common.MsgRep{Success: true, List: list}
+	msg := &common.MsgRep{Success: true, Loc: list}
 	enc.Encode(msg)
 }
 

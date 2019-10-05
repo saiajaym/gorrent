@@ -19,7 +19,9 @@ type FileReg struct {
 
 //FileLocation message type for location request
 type FileLocation struct {
-	File FileShare
+	Name   string
+	IpAddr string
+	Chunks string
 }
 
 //MsgReq enables coomunication between client and server with type of req
@@ -35,4 +37,18 @@ type MsgReq struct {
 type MsgRep struct {
 	Success bool
 	List    []FileShare
+	Loc     []FileLocation
+}
+
+//ChunkReq to req chunk from a client
+type ChunkReq struct {
+	File  string
+	Chunk int
+}
+
+//ChunkRep reply for chunk request peer to peer
+type ChunkRep struct {
+	File  string
+	Chunk int
+	Glob  []byte
 }

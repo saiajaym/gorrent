@@ -14,6 +14,8 @@ func Console() {
 		fmt.Println("Choose Option: ")
 		fmt.Println("1. GetList")
 		fmt.Println("2. Register Files")
+		fmt.Println("3. Download")
+		fmt.Println("999. Quit")
 
 		fmt.Scan(&option)
 		switch option {
@@ -41,6 +43,12 @@ func Console() {
 				fmt.Println("File Size: " + strconv.FormatInt(info.Size(), 10))
 				FileRegister(name, strconv.FormatInt(info.Size(), 10))
 			}
+		case 3:
+			fmt.Println("Enter file Name to download: ")
+			var name string
+			fmt.Scanln(&name)
+			list, _ := GetLocation(name)
+			Download(list, name)
 		case 999:
 			fmt.Println("Exiting...")
 			os.Exit(0)
