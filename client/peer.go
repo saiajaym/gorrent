@@ -1,10 +1,12 @@
 package main
 
 import (
-	"PFS/client/handlers"
+	handlers "PFS/client/handlers"
 	"fmt"
 	"net"
 	"os"
+
+	"github.com/boltdb/bolt"
 )
 
 const port = "localhost:"
@@ -20,15 +22,14 @@ func tracker() {
 
 }
 
-func peerManager(handle net.Listener) {
+func peerManager(handle net.Listener, db *bolt.DB) {
 	fmt.Println("peer_manager starting ....")
 	for {
 		con, err := handle.Accept()
 		if err != nil {
 			fmt.Println("peer_manager error new client " + err.Error())
 		}
-
-		go handlers.SeedHandle(con)
+		go handlers.LeechHandle(con, db)
 	}
 
 }
@@ -43,8 +44,10 @@ func main() {
 	if !handlers.CheckTracker() {
 		os.Exit(1)
 	}
-	go peerManager(handle)
+	db, _ := handlers.DBOpen(port + ".db")
+	handlers.DB = db
+	go peerManager(handle, db)
 
-	handlers.Console()
+	handlers.Console(db)
 
 }

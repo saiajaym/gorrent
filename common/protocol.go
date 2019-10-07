@@ -2,7 +2,7 @@ package common
 
 const (
 	//ChunkSize a cont chunk value for files 1MB
-	ChunkSize = 1048576
+	ChunkSize = 1000000
 )
 
 //FileShare common structure for file metadata

@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -43,12 +44,12 @@ func buildTree(list []common.FileLocation) []kv {
 	return kvl
 }
 
-func get(ip string, chunk int, file string) error {
+func get(ip string, chunk int, file string) ([]byte, error) {
 	con, err := net.Dial(ip, "tcp")
 	defer con.Close()
 	if err != nil {
 		fmt.Printf("Failed to get chunk %d from %s\n", chunk, ip)
-		return err
+		return nil, err
 	}
 	req := &common.ChunkReq{}
 	req.File = file
@@ -58,7 +59,11 @@ func get(ip string, chunk int, file string) error {
 	rep := &common.ChunkRep{}
 	dec := gob.NewDecoder(con)
 	dec.Decode(rep)
+	return rep.Glob, err
+}
 
+func save(glob []byte, chunk int, f *os.File) {
+	f.WriteAt(glob, int64(chunk)*int64(common.ChunkSize))
 }
 
 //Download Manages doenloads after getting the file Locations
@@ -66,7 +71,7 @@ func Download(list []common.FileLocation, file string) {
 	if len(list) == 0 {
 		return
 	}
-
+	f, _ := os.OpenFile(file, os.O_RDWR|os.O_CREATE, 0666)
 	fmt.Println("Starting Download...")
 	chunks := buildTree(list)
 
@@ -75,7 +80,12 @@ func Download(list []common.FileLocation, file string) {
 	for len(chunks) > 0 {
 		toDownload = chunks[0]
 		chunks = chunks[1:]
-		get(toDownload.key.ipaddr, toDownload.key.chunk, file)
+		glob, err := get(toDownload.key.ipaddr, toDownload.key.chunk, file)
+		if err != nil {
+			fmt.Println("Failed chunk download ... retrying ...")
+		} else {
+			save(glob, toDownload.key.chunk, f)
+		}
 	}
 
 }

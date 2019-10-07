@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/boltdb/bolt"
 )
 
 //Console manages client UI
-func Console() {
+func Console(db *bolt.DB) {
 	var option int
 	for {
 		fmt.Println("")
@@ -41,7 +43,9 @@ func Console() {
 				fmt.Println("Sharing File: " + path)
 				fmt.Println("Share Name: " + name)
 				fmt.Println("File Size: " + strconv.FormatInt(info.Size(), 10))
-				FileRegister(name, strconv.FormatInt(info.Size(), 10))
+				if FileRegister(name, strconv.FormatInt(info.Size(), 10)) {
+					FileMap(name, path, db)
+				}
 			}
 		case 3:
 			fmt.Println("Enter file Name to download: ")

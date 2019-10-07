@@ -7,10 +7,15 @@ import (
 	"net"
 	"os"
 	"strings"
+
+	"github.com/boltdb/bolt"
 )
 
 //Server holds server IP and Port
 var Server string
+
+//DB database object
+var DB *bolt.DB
 
 //CheckTracker checks initial tracker status ...if fails, exits client
 func CheckTracker() bool {
@@ -20,6 +25,7 @@ func CheckTracker() bool {
 		os.Exit(1)
 	}
 	fmt.Println("Connection to tracker Successful: " + con.RemoteAddr().String())
+
 	con.Close()
 	return true
 }
@@ -46,14 +52,14 @@ func GetList() []common.FileShare {
 }
 
 //FileRegister registers a given file name to server
-func FileRegister(file string, size string) {
+func FileRegister(file string, size string) bool {
 	myPort := os.Args[1]
 	con, err := net.Dial("tcp", Server)
 	var li []common.FileShare
 	li = append(li, common.FileShare{Name: file, Size: size})
 	if err != nil {
 		fmt.Println("Connection to tracker failed, exiting program: " + err.Error())
-		return
+		return false
 	}
 	msg := &common.MsgReq{}
 	msg.MessageType = "Register"
@@ -67,10 +73,10 @@ func FileRegister(file string, size string) {
 	con.Close()
 	if rep.Success {
 		fmt.Println("File Registered Sucessfully: ")
-		return
+		return true
 	}
 	fmt.Println("File Registration failed ...")
-	return
+	return false
 }
 
 //GetLocation fetches the list locations of file from server
