@@ -39,12 +39,13 @@ func main() {
 	handle, err := net.Listen("tcp", myPort)
 	if err != nil {
 		fmt.Println("Error Listening: " + err.Error())
+		os.Exit(0)
 	}
 	handlers.Server = server
 	if !handlers.CheckTracker() {
 		os.Exit(1)
 	}
-	db, _ := handlers.DBOpen(port + ".db")
+	db, _ := handlers.DBOpen(myPort + ".db")
 	handlers.DB = db
 	go peerManager(handle, db)
 

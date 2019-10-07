@@ -77,7 +77,7 @@ func (cli *Client) AddIPAdd(list []common.FileShare, ipaddr string) error {
 			tot, _ := strconv.Atoi(l.Size)
 			//fmt.Printf("cal chunks for %s, %d \n", l.Name, tot)
 			var chunks string
-			for i := 1; tot >= 0; i++ {
+			for i := 0; tot >= 0; i++ {
 				chunks = chunks + strconv.Itoa(i) + ","
 				tot = tot - common.ChunkSize
 			}
