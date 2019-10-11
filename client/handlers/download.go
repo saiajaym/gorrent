@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type kv struct {
@@ -20,7 +21,7 @@ func buildTree(list []common.FileLocation) []kv {
 	//var tree map[int][]string
 	tree := make(map[int][]string)
 	for _, l := range list {
-		fmt.Println(l)
+		//fmt.Println(l)
 		ip := l.IpAddr
 		l.Chunks = l.Chunks[0 : len(l.Chunks)-1]
 		chunks := strings.Split(l.Chunks, ",")
@@ -33,7 +34,7 @@ func buildTree(list []common.FileLocation) []kv {
 	}
 	var kvl []kv
 	for k, v := range tree {
-		fmt.Println(k, v)
+		//fmt.Println(k, v)
 		kvl = append(kvl, kv{k, v})
 	}
 	sort.Slice(kvl, func(i, j int) bool {
@@ -81,7 +82,8 @@ func Download(list []common.FileLocation, file string) {
 	for len(chunks) > 0 {
 		toDownload = chunks[0]
 		chunks = chunks[1:]
-		fmt.Printf("Downloading ... %d from %s \n", toDownload.chunk, toDownload.ipAddr[0])
+		time.Sleep(500 * time.Millisecond)
+		fmt.Printf("\r Downloading ... %d from %s ", toDownload.chunk, toDownload.ipAddr[0])
 		glob, err := get(toDownload.ipAddr[0], toDownload.chunk, file)
 		if err != nil {
 			fmt.Println("Failed chunk download ... retrying ..." + err.Error())

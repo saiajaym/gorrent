@@ -3,7 +3,9 @@ package handles
 import (
 	"PFS/common"
 	"encoding/gob"
+	"errors"
 	"fmt"
+	"strconv"
 )
 
 //RequestHandle handles client request/ acts as router
@@ -27,6 +29,9 @@ func (cli *Client) RequestHandle() {
 	case "FileLocation":
 		req := msg.Loc.Name
 		cli.fileLocReq(req)
+	case "ChunkRegister":
+		req := msg.ChunkRegister
+		cli.chunkRegister(req.File, req.IPAddr, req.Chunk)
 	default:
 		fmt.Println("RequestHandle invalid message tyoe")
 	}
@@ -80,4 +85,20 @@ func (cli *Client) fileLocReq(file string) bool {
 	}
 	cli.FileLocationsReply(list)
 	return flag
+}
+
+func (cli *Client) chunkRegister(file string, IPAddr string, chunk int) error {
+	if len(file) == 0 {
+		fmt.Println("Empty Chunk Req...")
+		return errors.New("empty Chunk Req")
+	}
+	err := cli.ChunkReg(file, IPAddr, strconv.Itoa(chunk))
+	if err != nil {
+		fmt.Println("Error saving chunk info ...")
+		cli.ChunkRegisterReply(false)
+		return err
+	}
+
+	cli.ChunkRegisterReply(true)
+	return err
 }

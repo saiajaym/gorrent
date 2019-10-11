@@ -136,3 +136,20 @@ func (cli *Client) FileLoc(file string) ([]common.FileLocation, error) {
 
 	return list, err
 }
+
+//ChunkReg Stores chunk info to db
+func (cli *Client) ChunkReg(file string, IPAddr string, chunk string) error {
+	key := []byte(file + "&" + IPAddr)
+	err := cli.Db.Update(func(tx *bolt.Tx) error {
+		c := tx.Bucket(fileLoc)
+		val := c.Get(key)
+		var err error
+		if val == nil {
+			err = c.Put(key, []byte(chunk+","))
+		} else {
+			err = c.Put(key, []byte(string(val)+chunk+","))
+		}
+		return err
+	})
+	return err
+}

@@ -40,11 +40,8 @@ func (cli *Client) FileLocationsReply(list []common.FileLocation) {
 }
 
 //ChunkRegisterReply Advises if the chunk registration was a success (Boolean).
-func (cli Client) ChunkRegisterReply() {
-
-}
-
-//FileChunkReply A stream of bytes repre- senting the requested chunk (array of bytes).
-func (cli *Client) FileChunkReply() {
-
+func (cli Client) ChunkRegisterReply(status bool) {
+	enc := gob.NewEncoder(cli.Con)
+	msg := &common.MsgRep{Success: status}
+	enc.Encode(msg)
 }
