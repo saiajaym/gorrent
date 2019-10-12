@@ -69,11 +69,13 @@ func save(glob []byte, chunk int, f *os.File) {
 }
 
 //Download Manages doenloads after getting the file Locations
-func Download(list []common.FileLocation, file string) {
+func Download(list []common.FileLocation, file string, path string) {
 	if len(list) == 0 {
 		return
 	}
-	f, _ := os.OpenFile(file, os.O_RDWR|os.O_CREATE, 0666)
+	downloadLoc := path + "/" + file
+	f, _ := os.OpenFile(downloadLoc, os.O_RDWR|os.O_CREATE, 0666)
+	defer f.Close()
 	fmt.Println("Starting Download...")
 	chunks := buildTree(list)
 
@@ -84,11 +86,15 @@ func Download(list []common.FileLocation, file string) {
 		chunks = chunks[1:]
 		time.Sleep(500 * time.Millisecond)
 		fmt.Printf("\r Downloading ... %d from %s ", toDownload.chunk, toDownload.ipAddr[0])
-		glob, err := get(toDownload.ipAddr[0], toDownload.chunk, file)
-		if err != nil {
-			fmt.Println("Failed chunk download ... retrying ..." + err.Error())
-		} else {
-			save(glob, toDownload.chunk, f)
+		for _, ipAddr := range toDownload.ipAddr {
+			glob, err := get(ipAddr, toDownload.chunk, file)
+			if err != nil {
+				fmt.Println("Retrying with diff peer ... Failed chunk download from " + ipAddr + " " + err.Error())
+			} else {
+				save(glob, toDownload.chunk, f)
+				ChunkRegister(file, toDownload.chunk)
+				break
+			}
 		}
 	}
 

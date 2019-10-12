@@ -28,7 +28,7 @@ func Console(db *bolt.DB) {
 					fmt.Println(l.Name)
 				}
 			} else {
-				fmt.Println("Failed ....")
+				fmt.Println("Failed ... No files?")
 			}
 		case 2:
 			fmt.Println("Enter absolute file path to share...")
@@ -52,7 +52,21 @@ func Console(db *bolt.DB) {
 			var name string
 			fmt.Scanln(&name)
 			list, _ := GetLocation(name)
-			Download(list, name)
+			if list == nil {
+				fmt.Printf("%s doesnt exist ...", name)
+				continue
+			}
+			fmt.Println("Enter absolute file path to download...")
+			var path string
+			fmt.Scanln(&path)
+			info, err := os.Stat(path)
+			if os.IsNotExist(err) || !info.IsDir() {
+				fmt.Println("Invalid PATH")
+				continue
+			} else {
+				FileMap(name, path+"/"+name, db)
+				Download(list, name, path)
+			}
 		case 999:
 			fmt.Println("Exiting...")
 			os.Exit(0)

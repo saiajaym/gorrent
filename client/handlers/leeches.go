@@ -20,10 +20,11 @@ func getchunk(file string, chunk int, leech Leech) []byte {
 	path, _ := leech.GetPath(file)
 	info, err := os.Stat(path)
 	if os.ErrNotExist == err {
-		fmt.Println("Failed to fetch chunk from local disk....")
+		fmt.Println("Failed to fetch chunk from local disk")
 		return nil
 	}
 	f, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	defer f.Close()
 	size := info.Size()
 	if err != nil {
 		fmt.Println("Failed to fetch chunk from local disk....")

@@ -3,9 +3,11 @@ package handlers
 import (
 	"PFS/common"
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/boltdb/bolt"
@@ -98,4 +100,28 @@ func GetLocation(file string) ([]common.FileLocation, error) {
 	var list []common.FileLocation
 	list = rep.Loc
 	return list, nil
+}
+
+//ChunkRegister registers downloaded chunk with  tracker
+func ChunkRegister(file string, chunk int) error {
+	myPort := os.Args[1]
+	con, err := net.Dial("tcp", Server)
+	if err != nil {
+		fmt.Println("Connection to tracker failed " + err.Error())
+		return err
+	}
+	msg := &common.MsgReq{}
+	msg.MessageType = "ChunkRegister"
+	msg.ChunkRegister.File = file
+	msg.ChunkRegister.IPAddr = strings.Split(con.LocalAddr().String(), ":")[0] + ":" + myPort
+	msg.ChunkRegister.Chunk = chunk
+	enc := gob.NewEncoder(con)
+	enc.Encode(msg)
+	rep := &common.MsgRep{}
+	dec := gob.NewDecoder(con)
+	dec.Decode(rep)
+	if !rep.Success {
+		return errors.New("registration failed for chunk " + strconv.Itoa(chunk))
+	}
+	return err
 }
